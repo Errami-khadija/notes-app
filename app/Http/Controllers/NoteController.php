@@ -4,15 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\Note;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+
+         $search = $request->input('search');
+
+    $notes = Note::where('user_id', Auth::id())
+        ->when($search, function ($query, $search) {
+            $query->where('title', 'like', "%$search%")
+                  ->orWhere('content', 'like', "%$search%");
+        })
+     ->paginate(3);
+
+    return view('notes.index', compact('notes', 'search'));
+        //  $notes = Note::where('user_id', Auth::id())->get();
+        // return view('notes.index', compact('notes'));
     }
 
     /**
@@ -20,7 +33,7 @@ class NoteController extends Controller
      */
     public function create()
     {
-        //
+         return view('notes.create');
     }
 
     /**
@@ -28,7 +41,18 @@ class NoteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+       $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
+
+        Note::create([
+            'user_id' => Auth::id(),
+            'title' => $request->title,
+            'content' => $request->content,
+        ]);
+
+        return redirect()->route('notes.index');
     }
 
     /**
@@ -44,7 +68,11 @@ class NoteController extends Controller
      */
     public function edit(Note $note)
     {
-        //
+         if ($note->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return view('notes.edit', compact('note'));
     }
 
     /**
@@ -52,7 +80,18 @@ class NoteController extends Controller
      */
     public function update(Request $request, Note $note)
     {
-        //
+        if ($note->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
+
+        $note->update($request->only('title', 'content'));
+
+        return redirect()->route('notes.index');
     }
 
     /**
@@ -60,6 +99,12 @@ class NoteController extends Controller
      */
     public function destroy(Note $note)
     {
-        //
+        if ($note->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $note->delete();
+
+        return redirect()->route('notes.index');
     }
 }
