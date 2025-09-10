@@ -63,6 +63,7 @@
                                 <input
                                     type="text"
                                     name="search"
+                                    id="search"
                                     placeholder="Search notes..."
                                     value="{{ request('search') }}"
                                     class="pl-10 pr-4 py-2 bg-white/60 border border-white/30 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent w-64"
@@ -112,13 +113,16 @@
 
     <!-- Main Content -->
     <main class="max-w-6xl mx-auto px-6 py-8">
+          
+
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
                 <div class="flex items-center justify-between">
+
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Notes</p>
-                        <p class="text-2xl font-bold text-gray-800" id="totalNotes">12</p>
+                        <p class="text-2xl font-bold text-gray-800" id="totalNotes">{{ $totalNotes }}</p>
                     </div>
                     <div class="w-12 h-12 bg-pastel-blue rounded-xl flex items-center justify-center">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,7 +148,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Favorites</p>
-                        <p class="text-2xl font-bold text-gray-800">3</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ $favoritesCount }}</p>
                     </div>
                     <div class="w-12 h-12 bg-pastel-yellow rounded-xl flex items-center justify-center">
                         <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
@@ -153,53 +157,64 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Recent</p>
-                        <p class="text-2xl font-bold text-gray-800">7</p>
-                    </div>
-                    <div class="w-12 h-12 bg-pastel-purple rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
+           
         </div>
 
-        <!-- Filter Tabs -->
-        <div class="flex flex-wrap gap-3 mb-8">
-            <button class="px-6 py-2 bg-white/80 text-gray-800 rounded-full font-medium border border-white/30 hover:bg-white transition-colors filter-tab active" data-filter="all">All Notes</button>
-            <button class="px-6 py-2 bg-white/60 text-gray-600 rounded-full font-medium border border-white/30 hover:bg-white/80 transition-colors filter-tab" data-filter="work">Work</button>
-            <button class="px-6 py-2 bg-white/60 text-gray-600 rounded-full font-medium border border-white/30 hover:bg-white/80 transition-colors filter-tab" data-filter="personal">Personal</button>
-            <button class="px-6 py-2 bg-white/60 text-gray-600 rounded-full font-medium border border-white/30 hover:bg-white/80 transition-colors filter-tab" data-filter="ideas">Ideas</button>
-            <button class="px-6 py-2 bg-white/60 text-gray-600 rounded-full font-medium border border-white/30 hover:bg-white/80 transition-colors filter-tab" data-filter="favorites">Favorites</button>
-        </div>
+        
 
         <!-- Notes Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="notesGrid">
             <!-- Sample Notes -->
-               @foreach ($notes as $note)
-            <div class="note-card bg-pastel-pink/80 backdrop-blur-sm rounded-2xl p-6 border border-white/30 cursor-pointer" data-category="work"
-                 onclick="openViewNoteModal(`{{ $note->title }}`, `{{ addslashes($note->content) }}`, `{{ $note->updated_at->format('d M Y - H:i') }}`)">
+  @foreach ($notes as $note)
+
+@php
+    $categoryColors = [
+        'Work' => [
+            'badge' => 'bg-blue-200/60 text-blue-700',
+            'card' => 'bg-blue-100/80',
+        ],
+        'Personal' => [
+            'badge' => 'bg-green-200/60 text-green-700',
+            'card' => 'bg-green-100/80',
+        ],
+        'Ideas' => [
+            'badge' => 'bg-purple-200/60 text-purple-700',
+            'card' => 'bg-purple-100/80',
+        ],
+        'Favorites' => [
+            'badge' => 'bg-yellow-200/60 text-yellow-700',
+            'card' => 'bg-yellow-100/80',
+        ],
+        'Other' => [
+            'badge' => 'bg-orange-200/60 text-orange-700',
+            'card' => 'bg-orange-100/80',
+        ],
+     ];
+
+      $colorClass = $categoryColors[$note->category] ?? $categoryColors['Other'];
+    @endphp
+<div class="note-card {{ $colorClass['card'] }} backdrop-blur-sm rounded-2xl p-6 border border-white/30 cursor-pointer"
+     onclick="openEditNoteModal(`{{ $note->id }}`, `{{ addslashes($note->title) }}`, `{{ $note->content }}`,`{{ $note->category }}`)">
                 <div class="flex items-start justify-between mb-4">
-                    <span class="px-3 py-1 bg-pink-200/60 text-pink-700 text-xs font-medium rounded-full">Work</span>
-                    <button class="text-gray-400 hover:text-pink-600 transition-colors">
+                    <span class="px-3 py-1 {{ $colorClass['badge'] }} text-xs font-medium rounded-full">{{ $note->category }}</span>
+                   <button 
+                        onclick="event.stopPropagation();toggleFavorite({{ $note->id }}, this)" 
+                        class="{{ $note->is_favorite ? 'text-yellow-500' : 'text-gray-400' }} hover:text-yellow-500 transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                         </svg>
-                    </button>
+                   </button>
                 </div>
                 <h3 class="font-semibold text-gray-800 mb-2">{{ $note->title }}</h3>
                 <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ $note->content }}</p>
                 <div class="flex items-center justify-between text-xs text-gray-500">
                     <span>{{ $note->updated_at->format('d M Y - H:i')}}</span>
-                    <span><form action="{{ route('notes.destroy', $note->id) }}" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                    </form></span>
+                    <span>
+                       <button type="button" class="text-red-600 hover:underline" onclick="event.stopPropagation(); openDeleteModal({{ $note->id }})">
+                          Delete
+                         </button>
+
+                   </span>
                 </div>
             </div>
              @endforeach
@@ -328,7 +343,74 @@
     </div>
 </div>
 
+<!-- Edit Note Modal -->
+<div id="editNoteModal" class="fixed inset-0 bg-black/30 modal-backdrop hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl">
+        <form method="POST"   id="editNoteForm" class="p-6 space-y-4">
+            @csrf
+            @method('PUT')
+            <div class="flex justify-between items-center border-b pb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Edit Note</h2>
+                <button type="button" onclick="closeEditNoteModal()" class="text-gray-400 hover:text-gray-600 transition">✖</button>
+            </div>
+
+            <input type="hidden" name="note_id" id="editNoteId">
+
+            <input name="title" id="editNoteTitle" required type="text" placeholder="Note title..." class="w-full text-lg font-medium border border-gray-200 rounded-lg p-2 placeholder-gray-400">
+
+            <select name="category" id="editNoteCategory" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-300">
+                <option value="">Select Category</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Ideas">Ideas</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <textarea name="content" id="editNoteContent" required placeholder="Start writing your note..." class="w-full h-40 border border-gray-200 rounded-lg p-2 placeholder-gray-400 resize-none"></textarea>
+
+            <div class="flex justify-end pt-4 border-t">
+                <button type="button" onclick="closeEditNoteModal()" class="mr-3 px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                <button type="submit" class="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
+        <p class="text-gray-600 mb-6">Are you sure you want to delete this note? This action cannot be undone.</p>
+
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeDeleteModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+            <form id="deleteForm" method="POST" class="inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 <script>
+function toggleFavorite(noteId, el) {
+    fetch(`/notes/${noteId}/favorite`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(response => {
+        if (response.ok) {
+            el.classList.toggle('text-yellow-500');
+            el.classList.toggle('text-gray-400');
+        }
+    });
+}
+
 function openNoteModal() {
     document.getElementById("noteModal").classList.remove("hidden");
     document.getElementById("noteModal").classList.add("flex");
@@ -337,10 +419,7 @@ function closeNoteModal() {
     document.getElementById("noteModal").classList.add("hidden");
     document.getElementById("noteModal").classList.remove("flex");
 }
-</script>
 
-
-<script>
     function openViewNoteModal(title, content, date) {
         document.getElementById('modalNoteTitle').textContent = title;
         document.getElementById('modalNoteContent').textContent = content;
@@ -353,7 +432,52 @@ function closeNoteModal() {
         document.getElementById('viewNoteModal').classList.add('hidden');
         document.getElementById('viewNoteModal').classList.remove('flex');
     }
+
+function openEditNoteModal(noteId, title, content, category) {
+    let form = document.getElementById('editNoteForm');
+    form.action = `/notes/${noteId}`;
+    document.getElementById('editNoteTitle').value = title;
+    document.getElementById('editNoteCategory').value = category;
+    document.getElementById('editNoteContent').value = content;
+    document.getElementById('editNoteModal').classList.remove('hidden');
+    document.getElementById('editNoteModal').classList.add('flex');
+}
+
+function closeEditNoteModal() {
+    document.getElementById("editNoteModal").classList.add("hidden");
+    document.getElementById("editNoteModal").classList.remove("flex");
+}
+
+function confirmDelete(event) {
+    event.preventDefault(); 
+
+    if (confirm("Are you sure you want to delete this note?")) {
+        event.target.submit();
+    }
+}
+
+function openDeleteModal(noteId) {
+    const modal = document.getElementById('deleteModal');
+    const form = document.getElementById('deleteForm');
+    form.action = `/notes/${noteId}`;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+ 
+
+
 </script>
+
+
+
+
+
 
 
     

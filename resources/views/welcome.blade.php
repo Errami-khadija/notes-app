@@ -29,11 +29,11 @@
 
   <div class="overlay text-center px-6 sm:px-10 md:px-20 max-w-xl">
     <!-- Language Switch Button -->
-    <div class="flex justify-end mb-4">
+    <!-- <div class="flex justify-end mb-4">
       <button onclick="toggleLanguage()" class="text-sm px-4 py-1 border rounded hover:bg-gray-200 transition">
         العربية
       </button>
-    </div>
+    </div> -->
 
     <!-- Logo -->
     <div class="mb-6">
@@ -57,19 +57,6 @@
     </div>
   </div>
 
-  <script>
-    let isArabic = false;
 
-    function toggleLanguage() {
-      isArabic = !isArabic;
-      document.querySelector("button").textContent = isArabic ? "English" : "العربية";
-      document.getElementById("tagline").textContent = isArabic ? "اكتبها. احتفظ بها. تذكرها." : "Write it. Keep it. Remember it.";
-      document.getElementById("description").innerHTML = isArabic
-        ? 'مرحبا بك في <strong>فكرة</strong> — ركنك الهادئ لتدوين الأفكار والذكريات.'
-        : 'Welcome to <strong>Fekra</strong> — your peaceful corner to capture ideas, thoughts, and memories.';
-      document.getElementById("loginBtn").textContent = isArabic ? "تسجيل الدخول" : "Login";
-      document.getElementById("registerBtn").textContent = isArabic ? "تسجيل" : "Register";
-    }
-  </script>
 </body>
 </html>

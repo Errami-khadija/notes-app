@@ -14,6 +14,11 @@ class NoteController extends Controller
     public function index(Request $request)
     {
 
+          $query = Note::query()->where('user_id', auth()->id());
+
+    
+        $userId = auth()->id();
+
          $search = $request->input('search');
 
     $notes = Note::where('user_id', Auth::id())
@@ -21,9 +26,17 @@ class NoteController extends Controller
             $query->where('title', 'like', "%$search%")
                   ->orWhere('content', 'like', "%$search%");
         })
-     ->paginate(3);
+     ->paginate(12);    
 
-    return view('notes.index', compact('notes', 'search'));
+
+       // Total notes
+    $totalNotes = Note::where('user_id', $userId)->count();
+
+     // Favorites 
+    $favoritesCount = Note::where('user_id', $userId)->where('is_favorite', 1)->count();
+
+
+    return view('notes.index', compact('notes', 'search','totalNotes','favoritesCount'));
         //  $notes = Note::where('user_id', Auth::id())->get();
         // return view('notes.index', compact('notes'));
     }
@@ -89,9 +102,10 @@ class NoteController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+             'category' => 'nullable|string|max:255',
         ]);
 
-        $note->update($request->only('title', 'content'));
+        $note->update($request->only('title', 'content','category'));
 
         return redirect()->route('notes.index');
     }
@@ -109,4 +123,13 @@ class NoteController extends Controller
 
         return redirect()->route('notes.index');
     }
+
+    public function toggleFavorite(Note $note)
+{
+    $note->is_favorite = !$note->is_favorite;
+    $note->save();
+
+    return response()->json(['success' => true]);
+}
+
 }

@@ -34,6 +34,16 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('notes', NoteController::class);
 
 });
+Route::post('/notes/{note}/favorite', [NoteController::class, 'toggleFavorite'])
+    ->middleware('auth');
+
+    Route::get('lang/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'ar'])) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('switchLang');
+
 
 
 
